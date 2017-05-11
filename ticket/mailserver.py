@@ -32,7 +32,8 @@ def scan():
         msg = email.message_from_string(raw_email)
         info = {}
         for part in msg.walk():
-            if part.get_content_type() == 'text/plain':
+            print(part.get_content_type())
+            if part.get_content_type() == 'text/plain' or part.get_content_type()=="text/html":
                 content = part.get_payload(decode=True).decode("gb2312")
 
                 # 判断是否是来自qq邮箱的自动转发确认邮件
