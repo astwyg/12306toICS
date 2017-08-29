@@ -32,7 +32,6 @@ def scan():
         msg = email.message_from_string(raw_email)
         info = {}
         for part in msg.walk():
-            print(part.get_content_type())
             if part.get_content_type() == 'text/plain' or part.get_content_type()=="text/html":
                 content = part.get_payload(decode=True).decode("gb2312")
 
@@ -44,9 +43,14 @@ def scan():
                 try:
                     reg = re.compile(r"1\.(.*)\r\n")
                     ticket_msg = reg.findall(content)[0]
-                    info["name"], info["time"], info["dist"], info["no"], info["seat"], _, _ = ticket_msg.split("，")
+                    ticket_msg = ticket_msg.split("，")[:5]
+                    if len(ticket_msg) == 1:  # PATCH
+                        ticket_msg = ticket_msg[0].split(",")[:5]
+                    info["name"], info["time"], info["dist"], info["no"], info["seat"] = ticket_msg
                     info["no"] = str(info["no"].replace(u"次列车",""))
                     info["name"], info["dist"], info["seat"] = info["name"].encode("UTF-8"), info["dist"].encode("UTF-8"), info["seat"].encode("UTF-8")
+                    if u"年" not in info["time"]:  # PATCH
+                        info["time"] = time.strftime(u"%Y") + u"年" + info["time"]
                     ts = time.mktime(time.strptime(info["time"],u'%Y年%m月%d日%H:%M开'))
                     info["time"] = time.strftime('%Y%m%dT%H%M00Z',time.gmtime(ts))
                     break
@@ -54,14 +58,14 @@ def scan():
                     continue
 
         if info.get("no") and info["no"] is not None:
-            sender = msg.get("from")
+            sender = msg.get("to")
             sender = email.Header.decode_header(sender)
             reg = re.compile(r"\<(.*)\>")
             info["sender"] = reg.findall(sender[0][0])[0]
             save(info)
 
         # delete the mail
-        mail.store(email_id, '+FLAGS', '\\Deleted')
+        mail.store(email_id, '+FLAGS', '\\Deleted') # commited during debug
     mail.expunge()
     mail.logout()
 
