@@ -3,7 +3,7 @@
 
 # 使用
 
-参考[本文档](http://leanote.com/blog/post/5905c815ab644140e40018d5)
+参考[本文档](http://note.ysgh.net/blog/post/5b0b534565d44002c100003d)
 
 # 部署
 
